@@ -23,7 +23,7 @@ public class LoginAuthService {
         UserInfo userInfo = new UserInfo();
         userInfo.setId(1);
         userInfo.setUserName("admin");
-        userInfo.setRoleCode(2);
+        userInfo.setRoleCode(1);
         return AuthTokenUtils.tokenSign(uuid, userInfo, loginTime, null);
     }
 }

@@ -16,7 +16,7 @@ public enum AuthCustomCodeEnum {
 
     ENTITY_NOT_NULL("0101", "对象不能为空", "%s不能为空"),
 
-    UNKNOWN_ERROR("0199", "未知异常", "异常：%s"),
+    UNKNOWN_ERROR("0199", "权限未知异常", "异常：%s"),
     ;
 
     private String code;

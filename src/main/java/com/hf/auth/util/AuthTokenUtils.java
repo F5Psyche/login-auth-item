@@ -29,7 +29,7 @@ import java.util.UUID;
 public class AuthTokenUtils {
 
     private AuthTokenUtils() {
-        throw new AuthCustomException(AuthCustomCodeEnum.UNKNOWN_ERROR, "CommonCustomUtils");
+        throw new AuthCustomException(AuthCustomCodeEnum.UNKNOWN_ERROR, "AuthTokenUtils");
     }
 
     private static Logger log = LoggerFactory.getLogger(AuthTokenUtils.class);
