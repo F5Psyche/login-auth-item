@@ -21,7 +21,7 @@ public class WebConfig implements WebMvcConfigurer {
      * /** (匹配所有路径)
      * /admin/** (匹配 /admin/ 下的所有路径)
      *
-     * @param registry
+     * @param registry 注册
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
