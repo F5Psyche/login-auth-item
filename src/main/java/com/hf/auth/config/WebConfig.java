@@ -1,10 +1,14 @@
 package com.hf.auth.config;
 
+import com.hf.auth.entity.yml.ExcludeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author zhanghf/f5psyche@163.com
@@ -14,8 +18,13 @@ import javax.annotation.Resource;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    private static Logger log = LoggerFactory.getLogger(WebConfig.class);
+
     @Resource
     LoginAuthInterceptor loginAuthInterceptor;
+
+    @Resource
+    ExcludeInfo excludeInfo;
 
     /**
      * /** (匹配所有路径)
@@ -25,10 +34,25 @@ public class WebConfig implements WebMvcConfigurer {
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(loginAuthInterceptor)
-                //拦截
-                .addPathPatterns("/**")
-                //排除拦截
-                .excludePathPatterns("/","/user/login");
+        List<String> patterns = excludeInfo.getPatterns();
+        log.info("patterns={}", patterns);
+        if (patterns == null) {
+            registry.addInterceptor(loginAuthInterceptor)
+                    //拦截
+                    .addPathPatterns("/**")
+                    //排除拦截
+                    .excludePathPatterns("/")
+                    .excludePathPatterns("/userInfo/login/**")
+                    .excludePathPatterns("/ssoTokenLogin/**")
+                    .excludePathPatterns("/file/viewImage/**")
+                    .excludePathPatterns("/govDing/**");
+        } else {
+            registry.addInterceptor(loginAuthInterceptor)
+                    //拦截
+                    .addPathPatterns("/**")
+                    //排除拦截
+                    .excludePathPatterns("/")
+                    .excludePathPatterns(patterns);
+        }
     }
 }
