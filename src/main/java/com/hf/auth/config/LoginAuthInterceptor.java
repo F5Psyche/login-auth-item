@@ -6,6 +6,7 @@ import com.hf.auth.config.enums.AuthCustomCodeEnum;
 import com.hf.auth.config.enums.RoleEnum;
 import com.hf.auth.entity.po.UserInfo;
 import com.hf.auth.util.AuthTokenUtils;
+import com.hf.tools.util.CommonCustomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -58,32 +59,55 @@ public class LoginAuthInterceptor extends HandlerInterceptorAdapter {
                     return true;
                 } else {
                     log.info("uuid={}, userInfo={}", uuid, JSON.toJSON(userInfo));
-                    setResponse(uuid, response, "权限不足");
+                    setResponse(uuid, response, "权限不足", "0198");
                     return false;
                 }
             } catch (Exception e) {
                 log.error("uuid={}, errMsg={}", uuid, AuthTokenUtils.getStackTraceString(e));
-                this.setResponse(uuid, response, AuthCustomCodeEnum.UNKNOWN_ERROR.getMsg());
+                setResponse(uuid, response, AuthCustomCodeEnum.UNKNOWN_ERROR.getMsg(), "0198");
                 return false;
             }
         }
-        this.setResponse(uuid, response, "请求的接口地址不存在");
+        setResponse(uuid, response, "请求的接口地址不存在", "0198");
         return false;
     }
 
-    private void setResponse(UUID uuid, HttpServletResponse response, String message) {
+
+    /**
+     * response 页面错误信息
+     *
+     * @param uuid     唯一识别码
+     * @param response response
+     * @param message  错误描述
+     * @param msgCode  错误码
+     */
+    public static void setResponse(Object uuid, HttpServletResponse response, String message, String msgCode) {
         try {
             response.setCharacterEncoding("UTF-8");
             response.setContentType("text/html;charset=utf-8");
             Map<String, Object> map = new HashMap<>(2);
             map.put("requestId", uuid);
-            map.put("errMsg", message);
+            map.put("resultDes", message);
+            map.put("success", false);
+            if (msgCode == null) {
+                map.put("code", "0199");
+            } else {
+                map.put("code", msgCode);
+            }
             response.getWriter().append(JSON.toJSONString(map));
         } catch (IOException e) {
-            log.error("uuid={}, errMsg={}", uuid, AuthTokenUtils.getStackTraceString(e));
+            log.error(CommonCustomUtils.LOG_ERROR_OUTPUT_PARAM, uuid, CommonCustomUtils.getStackTraceString(e));
         }
     }
 
+    /**
+     * 验证用户权限是否有访问接口的权限
+     * 等级类型的验证
+     *
+     * @param roleEnum 接口上注解设置的权限
+     * @param roleCode 用户权限等级
+     * @return 是否有权限访问
+     */
     private boolean authVerify(RoleEnum roleEnum, Integer roleCode) {
         if (StringUtils.isEmpty(roleCode)) {
             return false;
