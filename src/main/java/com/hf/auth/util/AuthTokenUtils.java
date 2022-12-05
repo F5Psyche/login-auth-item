@@ -113,7 +113,7 @@ public class AuthTokenUtils {
      * @param <T>   泛型
      * @return 对象
      */
-    public static <T> T analysisToken(UUID uuid, String token, Class<T> clazz) {
+    public static <T> T analysisToken(Object uuid, String token, Class<T> clazz) {
         try {
             if (StringUtils.isEmpty(token)) {
                 throw new AuthCustomException(AuthCustomCodeEnum.ENTITY_NOT_NULL, "token");

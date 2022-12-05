@@ -1,12 +1,12 @@
 package com.hf.auth.config;
 
-import com.alibaba.fastjson.JSON;
 import com.hf.auth.config.annotation.RoleNum;
 import com.hf.auth.config.enums.AuthCustomCodeEnum;
 import com.hf.auth.config.enums.RoleEnum;
 import com.hf.auth.entity.po.UserInfo;
 import com.hf.auth.util.AuthTokenUtils;
 import com.hf.tools.util.CommonCustomUtils;
+import com.hf.tools.util.JackJsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -21,6 +21,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import static com.hf.tools.config.filter.CsrfDefenseFilter.UUID_KEY;
 
 /**
  * 自定义注解RoleNum的实现层
@@ -38,27 +40,34 @@ public class LoginAuthInterceptor extends HandlerInterceptorAdapter {
     public boolean preHandle(HttpServletRequest request,
                              HttpServletResponse response,
                              Object handler) {
-        UUID uuid = UUID.randomUUID();
+
+        Object uuid = request.getAttribute(UUID_KEY).toString();
+        log.info("拦截器：uuid={}", uuid);
+        if (StringUtils.isEmpty(uuid)) {
+            uuid = UUID.randomUUID();
+            request.setAttribute(UUID_KEY, uuid);
+        }
         if (handler instanceof HandlerMethod) {
-            request.setAttribute("UUID", uuid);
             HandlerMethod handlerMethod = (HandlerMethod) handler;
             try {
                 RoleNum roleNum = handlerMethod.getMethodAnnotation(RoleNum.class);
                 String token = request.getHeader("token");
                 if (roleNum == null) {
                     if (!StringUtils.isEmpty(token)) {
-                        request.setAttribute("userInfo", AuthTokenUtils.analysisToken(uuid, token, UserInfo.class));
+
+                        request.setAttribute("userInfo", AuthTokenUtils.analysisToken(uuid, token));
                     }
                     return true;
                 }
                 Method method = handlerMethod.getMethod();
                 log.info("uuid={}, method={}, methodName={}", uuid, method, method.getName());
-                UserInfo userInfo = AuthTokenUtils.analysisToken(uuid, token, UserInfo.class);
+                String userData = AuthTokenUtils.analysisToken(uuid, token);
+                UserInfo userInfo = JackJsonUtils.objectToJavaBean(uuid, userData, null, UserInfo.class);
                 if (authVerify(roleNum.role(), userInfo.getRoleCode())) {
                     request.setAttribute("userInfo", userInfo);
                     return true;
                 } else {
-                    log.info("uuid={}, userInfo={}", uuid, JSON.toJSON(userInfo));
+                    log.info("uuid={}, userInfo={}", uuid, userData);
                     setResponse(uuid, response, "权限不足", "0198");
                     return false;
                 }
@@ -94,7 +103,8 @@ public class LoginAuthInterceptor extends HandlerInterceptorAdapter {
             } else {
                 map.put("code", msgCode);
             }
-            response.getWriter().append(JSON.toJSONString(map));
+            String responseData = JackJsonUtils.writeValueAsString(uuid, map);
+            response.getWriter().append(responseData);
         } catch (IOException e) {
             log.error(CommonCustomUtils.LOG_ERROR_OUTPUT_PARAM, uuid, CommonCustomUtils.getStackTraceString(e));
         }

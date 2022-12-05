@@ -1,6 +1,7 @@
 package com.hf.auth.config;
 
-import com.hf.auth.entity.yml.ExcludeInfo;
+
+import com.hf.tools.entity.dto.yml.ExcludeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,8 @@ import javax.annotation.Resource;
 import java.util.List;
 
 /**
+ * 拦截器 配置
+ *
  * @author zhanghf/f5psyche@163.com
  * @version 1.0
  * @date 15:11 2022/5/23
@@ -34,7 +37,7 @@ public class WebConfig implements WebMvcConfigurer {
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        List<String> patterns = excludeInfo.getPatterns();
+        List<String> patterns = excludeInfo.getWebMvcPatterns();
         log.info("patterns={}", patterns);
         if (patterns == null) {
             registry.addInterceptor(loginAuthInterceptor)
@@ -42,10 +45,8 @@ public class WebConfig implements WebMvcConfigurer {
                     .addPathPatterns("/**")
                     //排除拦截
                     .excludePathPatterns("/")
-                    .excludePathPatterns("/userInfo/login/**")
-                    .excludePathPatterns("/ssoTokenLogin/**")
-                    .excludePathPatterns("/file/viewImage/**")
-                    .excludePathPatterns("/govDing/**");
+                    .excludePathPatterns("/user/login/**");
+
         } else {
             registry.addInterceptor(loginAuthInterceptor)
                     //拦截
