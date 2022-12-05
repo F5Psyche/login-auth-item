@@ -1,7 +1,6 @@
 package com.hf.auth.util;
 
 
-import com.alibaba.fastjson.JSON;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
@@ -10,6 +9,7 @@ import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.hf.auth.config.enums.AuthCustomCodeEnum;
 import com.hf.auth.config.exception.AuthCustomException;
+import com.hf.tools.util.JackJsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -90,7 +90,7 @@ public class AuthTokenUtils {
             Map<String, Object> headerClaims = new HashMap<>(2);
             headerClaims.put("alg", "HS256");
             headerClaims.put("type", "JWT");
-            String data = JSON.toJSONString(object);
+            String data = JackJsonUtils.writeValueAsString(uuid, object);
             JWTCreator.Builder builder = JWT.create();
             builder.withHeader(headerClaims)
                     .withClaim(PAYLOAD, data)
@@ -109,11 +109,9 @@ public class AuthTokenUtils {
      *
      * @param uuid  唯一识别码
      * @param token token
-     * @param clazz 对象属性
-     * @param <T>   泛型
-     * @return 对象
+     * @return data
      */
-    public static <T> T analysisToken(Object uuid, String token, Class<T> clazz) {
+    public static String analysisToken(Object uuid, String token) {
         try {
             if (StringUtils.isEmpty(token)) {
                 throw new AuthCustomException(AuthCustomCodeEnum.ENTITY_NOT_NULL, "token");
@@ -123,8 +121,7 @@ public class AuthTokenUtils {
             DecodedJWT jwt = verifier.verify(token);
             Map<String, Claim> claims = jwt.getClaims();
             if (claims.containsKey(PAYLOAD)) {
-                String data = claims.get(PAYLOAD).asString();
-                return JSON.parseObject(data, clazz);
+                return claims.get(PAYLOAD).asString();
             } else {
                 throw new AuthCustomException(AuthCustomCodeEnum.UNKNOWN_ERROR, "token解析异常");
             }
