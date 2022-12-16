@@ -1,7 +1,7 @@
 package com.hf.auth.config.enums;
 
 /**
- * 首两位01 代表认证系统
+ * 首两位04 代表认证系统
  * 全局自定义错误编码枚举
  *
  * @author zhanghf
@@ -12,9 +12,9 @@ public enum AuthCustomCodeEnum {
     /**
      * 交易请求成功
      */
-    SUCCESS("0100", "成功!", "成功"),
+    SUCCESS("0000", "成功!", "成功"),
 
-    ENTITY_NOT_NULL("0101", "对象不能为空", "%s不能为空"),
+    ENTITY_NOT_NULL("0401", "对象不能为空", "%s不能为空"),
 
     UNKNOWN_ERROR("0199", "权限未知异常", "异常：%s"),
     ;
